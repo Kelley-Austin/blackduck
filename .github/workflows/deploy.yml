@@ -1,0 +1,27 @@
+name: Deploy to Salesforce
+
+on:
+  push:
+    branches:
+      - developer/**
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
+
+      - name: Authenticate to Salesforce
+        run: |
+          echo "${{ secrets.BLACKDUCK_SFDX_URL }}" | sf org login sfdx-url --stdin --alias target-org
+
+      - name: Deploy metadata
+        run: |
+          sf project deploy start \
+            --manifest manifest/package.xml \
+            --target-org target-org \
+            --test-level NoTestRun \
+            --wait 30
